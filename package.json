@@ -1,0 +1,14 @@
+{
+  "name": "spectra-js",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/core/Engine.js",
+  "scripts": {
+    "start": "live-server"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  },
+  "author": "Alper Dursun",
+  "license": "MIT"
+}
