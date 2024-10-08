@@ -8,32 +8,30 @@ export class Object3D {
         this.scale = new Vector3(1, 1, 1);
         this.modelMatrix = new Matrix4();
         this.children = [];
-        this.parent = null;
     }
 
+    /**
+     * Add a child object
+     * @param {Object3D} child
+     */
     add(child) {
-        if (child instanceof Object3D) {
-            this.children.push(child);
-            child.parent = this;
-        } else {
-            console.error('Child is not a instance of Object3D');
-        }
+        this.children.push(child);
     }
 
-    remove(child) {
-        const index = this.children.indexOf(child);
-        if (index !== -1) {
-            child.parent = null;
-            this.children.splice(index, 1);
-        }
-    }
-
+    /**
+     * Update the transformation matrix based on position, rotation, and scale
+     */
     updateMatrix() {
-        this.modelMatrix.identity()
-            .translate(this.position.x, this.position.y, this.position.z)
-            .rotateX(this.rotation.x)
-            .rotateY(this.rotation.y)
-            .rotateZ(this.rotation.z)
-            .scale(this.scale.x, this.scale.y, this.scale.z);
+        this.modelMatrix.identity();
+        this.modelMatrix.translate(this.position.x, this.position.y, this.position.z);
+        this.modelMatrix.rotateX(this.rotation.x);
+        this.modelMatrix.rotateY(this.rotation.y);
+        this.modelMatrix.rotateZ(this.rotation.z);
+        this.modelMatrix.scale(this.scale.x, this.scale.y, this.scale.z);
+
+        // Update children matrices if any
+        this.children.forEach(child => {
+            child.updateMatrix();
+        });
     }
 }

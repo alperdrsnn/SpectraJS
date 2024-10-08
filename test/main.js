@@ -8,6 +8,8 @@ import { BoxGeometry } from '../src/geometries/BoxGeometry.js';
 import { Input } from '../src/core/Input.js';
 import {TextureLoader} from "../src/core/TextureLoader.js";
 import {Material} from "../src/core/Material.js";
+import {DirectionalLight} from "../src/core/DirectionalLight.js";
+import {Vector3} from "../src/math/Vector3.js";
 
 const canvas = document.getElementById('glCanvas');
 const engine = new Engine(canvas);
@@ -16,7 +18,7 @@ const gl = engine.gl;
 const input = new Input(canvas);
 
 const scene = new Scene();
-const aspect = canvas.width / canvas.clientHeight;
+const aspect = canvas.width / canvas.height;
 const camera = new Camera(60, aspect, 0.1, 1000);
 camera.position.z = 5;
 camera.updateViewMatrix();
@@ -29,31 +31,68 @@ geometry.createBuffers(gl);
 const vertexShaderSource = `
   attribute vec3 aPosition;
   attribute vec2 aTexCoord;
+  attribute vec3 aNormal;
 
   uniform mat4 uModelMatrix;
   uniform mat4 uViewMatrix;
   uniform mat4 uProjectionMatrix;
 
   varying vec2 vTexCoord;
+  varying vec3 vNormal;
+  varying vec3 vFragPos;
 
   void main() {
     vTexCoord = aTexCoord;
-    gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * vec4(aPosition, 1.0);
+    vec4 fragPos = uModelMatrix * vec4(aPosition, 1.0);
+    vFragPos = fragPos.xyz;
+    vNormal = mat3(uModelMatrix) * aNormal;
+    gl_Position = uProjectionMatrix * uViewMatrix * fragPos;
   }
 `;
 
 const fragmentShaderSource = `
   precision mediump float;
 
+  struct DirectionalLight {
+    vec3 direction;
+    vec3 color;
+    float intensity;
+  };
+
   uniform sampler2D uTexture;
+  uniform DirectionalLight uDirectionalLight;
+
   varying vec2 vTexCoord;
+  varying vec3 vNormal;
+  varying vec3 vFragPos;
 
   void main() {
-    gl_FragColor = texture2D(uTexture, vTexCoord);
+    vec4 texColor = texture2D(uTexture, vTexCoord);
+
+    // Ambient component
+    vec3 ambient = 0.1 * uDirectionalLight.color;
+
+    // Diffuse component
+    vec3 norm = normalize(vNormal);
+    vec3 lightDir = normalize(-uDirectionalLight.direction);
+    float diff = max(dot(norm, lightDir), 0.0);
+    vec3 diffuse = uDirectionalLight.intensity * diff * uDirectionalLight.color;
+
+    // Combine components
+    vec3 result = (ambient + diffuse) * texColor.rgb;
+
+    gl_FragColor = vec4(result, texColor.a);
   }
 `;
 
 const textureLoader = new TextureLoader(gl);
+
+const directionalLight = new DirectionalLight(
+    new Vector3(-0.5, -1.0, -0.5).normalize(),
+    [1.0, 1.0, 1.0],
+    1.0
+);
+scene.addLight(directionalLight);
 
 textureLoader.load('/test/images/texture.jpg').then((texture) => {
     const material = new Material(gl, vertexShaderSource, fragmentShaderSource, texture);
@@ -65,18 +104,10 @@ textureLoader.load('/test/images/texture.jpg').then((texture) => {
         requestAnimationFrame(animate);
 
         const moveSpeed = 0.1;
-        if (input.isKeyPressed('KeyW')) {
-            camera.position.z -= moveSpeed;
-        }
-        if (input.isKeyPressed('KeyS')) {
-            camera.position.z += moveSpeed;
-        }
-        if (input.isKeyPressed('KeyA')) {
-            camera.position.x -= moveSpeed;
-        }
-        if (input.isKeyPressed('KeyD')) {
-            camera.position.x += moveSpeed;
-        }
+        if (input.isKeyPressed('KeyW')) camera.position.z -= moveSpeed;
+        if (input.isKeyPressed('KeyS')) camera.position.z += moveSpeed;
+        if (input.isKeyPressed('KeyA')) camera.position.x -= moveSpeed;
+        if (input.isKeyPressed('KeyD')) camera.position.x += moveSpeed;
 
         camera.updateViewMatrix();
 

@@ -65,13 +65,41 @@ export class BoxGeometry extends Geometry {
             0, 0, 1, 0, 1, 1, 0, 1,
         ];
 
-        this.createUVBuffer = function (gl) {
-            this.uvBuffer = gl.createBuffer();
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.uvs), gl.STATIC_DRAW);
-        };
+        this.normals = [
+            // Front Side
+            0, 0, 1,
+            0, 0, 1,
+            0, 0, 1,
+            0, 0, 1,
+            // Back Side
+            0, 0, -1,
+            0, 0, -1,
+            0, 0, -1,
+            0, 0, -1,
+            // Top Side
+            0, 1, 0,
+            0, 1, 0,
+            0, 1, 0,
+            0, 1, 0,
+            // Bottom Side
+            0, -1, 0,
+            0, -1, 0,
+            0, -1, 0,
+            0, -1, 0,
+            // Right Side
+            1, 0, 0,
+            1, 0, 0,
+            1, 0, 0,
+            1, 0, 0,
+            // Left Side
+            -1, 0, 0,
+            -1, 0, 0,
+            -1, 0, 0,
+            -1, 0, 0,
+        ];
 
-        this.createBuffers = function (gl) {
+        this.createBuffers = function(gl) {
+            // Vertex Buffer
             this.vertexBuffer = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
             gl.bufferData(
@@ -80,6 +108,7 @@ export class BoxGeometry extends Geometry {
                 gl.STATIC_DRAW
             );
 
+            // Index Buffer
             if (this.indices.length > 0) {
                 this.indexBuffer = gl.createBuffer();
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
@@ -90,7 +119,15 @@ export class BoxGeometry extends Geometry {
                 );
             }
 
-            this.createUVBuffer(gl);
-        }
+            // UV Buffer
+            this.uvBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.uvs), gl.STATIC_DRAW);
+
+            // Normal Buffer
+            this.normalBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.normals), gl.STATIC_DRAW);
+        };
     }
 }

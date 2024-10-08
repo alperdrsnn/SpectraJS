@@ -29,7 +29,7 @@ export class Input {
             this.mouse.buttons[event.button] = true;
         });;
 
-        this.canvas.addEventListener('mouseuo', (event) => {
+        this.canvas.addEventListener('mouseup', (event) => {
             this.mouse.buttons[event.button] = false;
         });
     }

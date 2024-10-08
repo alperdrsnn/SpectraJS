@@ -1,27 +1,20 @@
 export class Engine {
-
+    /**
+     * @param {HTMLCanvasElement} canvas
+     */
     constructor(canvas) {
         this.canvas = canvas;
-        this.gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-
+        this.gl = this.initWebGL();
         if (!this.gl) {
-            console.error('WEBGL not supported!');
-            return;
+            alert('Unable to initialize WebGL. Your browser or machine may not support it.');
         }
-
-        this.init();
     }
 
-    init() {
-        this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
-    }
-
-    start() {
-        this.update();
-    }
-
-    update() {
-        this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-        requestAnimationFrame(this.update.bind())
+    /**
+     * Initialize WebGL context
+     * @returns {WebGLRenderingContext}
+     */
+    initWebGL() {
+        return this.canvas.getContext('webgl') || this.canvas.getContext('experimental-webgl');
     }
 }
